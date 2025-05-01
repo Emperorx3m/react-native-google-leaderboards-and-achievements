@@ -1,0 +1,77 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+String fileName = "app.json"
+String jsonRoot = "react-native-google-leaderboards" // Updated to match your json block name
+String jsonRaw = "GOOGLE_LEADERBOARDS_JSON_RAW" // Updated variable name
+
+File jsonFile = null
+File parentDir = rootProject.projectDir
+
+// Loop through directories to find app.json
+for (int i = 0; i <= 3; i++) {
+  if (parentDir == null) break
+  parentDir = parentDir.parentFile
+  if (parentDir != null) {
+    jsonFile = new File(parentDir, fileName)
+    if (jsonFile.exists()) break
+  }
+}
+
+// Check if the app.json file exists
+if (jsonFile != null && jsonFile.exists()) {
+  rootProject.logger.info ":${project.name} ${fileName} found at ${jsonFile.toString()}"
+  Object json = null
+
+  try {
+    // Parse app.json content
+    json = new JsonSlurper().parseText(jsonFile.text)
+  } catch (Exception ignored) {
+    rootProject.logger.warn ":${project.name} failed to parse ${fileName} found at ${jsonFile.toString()}."
+    rootProject.logger.warn ignored.toString()
+  }
+
+  // If the block for react-native-google-leaderboards exists, extract the projectId
+  if (json && json[jsonRoot] && json[jsonRoot].projectId) {
+    String jsonStr = JsonOutput.toJson(JsonOutput.toJson(json[jsonRoot]))
+
+    rootProject.ext.googleLeaderboardsJson = [
+      raw: json[jsonRoot],
+      projectId: json[jsonRoot].projectId, // Store the projectId
+      isFlagEnabled: { key, defaultValue -> 
+        if (json[jsonRoot] == null || json[jsonRoot][key] == null) return defaultValue
+        return json[jsonRoot][key] == true ? true : false
+      },
+      getStringValue: { key, defaultValue -> 
+        if (json[jsonRoot] == null) return defaultValue
+        return json[jsonRoot][key] ? json[jsonRoot][key] : defaultValue
+      }
+    ]
+
+    rootProject.logger.info ":${project.name} found ${jsonRoot} json root in ${fileName}, creating app build config"
+    android {
+      defaultConfig {
+        // Inject the raw JSON as a string in buildConfigField
+        buildConfigField "String", jsonRaw, jsonStr
+      }
+    }
+  } else {
+    rootProject.ext.googleLeaderboardsJson = false
+    rootProject.logger.info ":${project.name} ${fileName} found with no ${jsonRoot} config, skipping"
+    android {
+      defaultConfig {
+        // Provide an empty JSON block if not found
+        buildConfigField "String", jsonRaw, '"{}"'
+      }
+    }
+  }
+} else {
+  rootProject.ext.googleLeaderboardsJson = false
+  rootProject.logger.info ":${project.name} no ${fileName} found, skipping"
+  android {
+    defaultConfig {
+      // Provide an empty JSON block if app.json doesn't exist
+      buildConfigField "String", jsonRaw, '"{}"'
+    }
+  }
+}

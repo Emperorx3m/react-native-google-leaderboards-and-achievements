@@ -1,3 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.googleleaderboards">
+          <application>
+    <meta-data android:name="com.google.android.gms.games.APP_ID"
+               android:value="${appJSONGoogleLeaderboardsProjectID}"/>
+  </application>
 </manifest>

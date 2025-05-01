@@ -15,6 +15,13 @@ buildscript {
   }
 }
 
+ allprojects {
+    repositories {
+      google()
+      mavenCentral()
+    }
+  }
+
 
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
@@ -34,6 +41,114 @@ def supportsNamespace() {
   return (major == 7 && minor >= 3) || major >= 8
 }
 
+apply from: file("./app-json.gradle")
+
+def appJSONGoogleLeaderboardsProjectIDString = ""
+
+if (rootProject.ext.has("googleLeaderboardsJson") && rootProject.ext.googleLeaderboardsJson) {
+  appJSONGoogleLeaderboardsProjectIDString = rootProject.ext.googleLeaderboardsJson.getStringValue("projectId", "")
+}
+
+if (!appJSONGoogleLeaderboardsProjectIDString) {
+  println "\n\n\n"
+  println "###############################################################-ALERT-############################################################"
+  println "\n\n\n"
+  println "WARNING: react-native-google-leaderboards requires a 'projectId' property inside a 'react-native-google-leaderboards' key in your app.json."
+  println "         No projectId property was found in this location. LEADERBOARDS WONT WORK!"
+  println "\n\n\n"
+  println "################################################################--ALERT--################################################################"
+  println "\n\n\n"
+  throw new GradleException("add the block to your app.json NOT INSIDE EXPO JSON BLOCK IF YOU'RE USING EXPO")
+} else {
+  def appProjectDir = file("${rootProject.projectDir}/app")
+
+  // === PATCH AndroidManifest.xml ===
+  def manifestFile = new File(appProjectDir, "src/main/AndroidManifest.xml")
+  if (!manifestFile.exists()) {
+    manifestFile.parentFile.mkdirs()
+    manifestFile.write("""<?xml version="1.0" encoding="utf-8"?>
+<manifest package="com.example">
+  <application/>
+</manifest>""")
+  }
+
+  def manifestText = manifestFile.text
+  def metaTag = "<meta-data android:name=\"com.google.android.gms.games.APP_ID\" android:value=\"${appJSONGoogleLeaderboardsProjectIDString}\" />"
+
+  if (!manifestText.contains("com.google.android.gms.games.APP_ID")) {
+    manifestText = manifestText.replaceFirst(
+      /<application([^>]*)>/,
+      "<application\$1>\n    ${metaTag}"
+    )
+    manifestFile.write(manifestText)
+    println "✅ Injected Google Play Games APP_ID into AndroidManifest.xml"
+  } else {
+    println "ℹ️ Google Play Games APP_ID already exists in AndroidManifest.xml, skipping injection."
+  }
+
+// === PATCH build.gradle ===
+def appBuildGradle = new File(appProjectDir, "build.gradle")
+if (!appBuildGradle.exists()) {
+  appBuildGradle.write("dependencies {\n}\n")
+}
+
+def gradleText = appBuildGradle.text
+def depLine = " implementation 'com.google.android.gms:play-services-games-v2:+'"
+
+// --- Inject dependency if not present ---
+if (!gradleText.contains(depLine)) {
+  gradleText = gradleText.replaceFirst(
+    /dependencies\s*\{/,
+    "dependencies {\n    ${depLine}"
+  )
+  println "✅ Injected Google Play Games dependency into app/build.gradle"
+} else {
+  println "ℹ️ Google Play Games dependency already exists in app/build.gradle, skipping injection."
+}
+
+// --- Inject or Create buildscript { repositories { google(); mavenCentral() } } ---
+def buildscriptBlock = gradleText.find(/(?s)buildscript\s*\{.*?\}/)
+if (!buildscriptBlock) {
+  gradleText = """buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+""" + gradleText
+} else if (!buildscriptBlock.contains("repositories")) {
+  def patched = buildscriptBlock.replaceFirst(/\{\s*/) {
+    "{\n    repositories {\n        google()\n        mavenCentral()\n    }\n"
+  }
+  gradleText = gradleText.replace(buildscriptBlock, patched)
+}
+
+// --- Inject or Create allprojects { repositories { google(); mavenCentral() } } ---
+def allProjectsBlock = gradleText.find(/(?s)allprojects\s*\{.*?\}/)
+if (!allProjectsBlock) {
+  gradleText += """
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+"""
+} else if (!allProjectsBlock.contains("repositories")) {
+  def patched = allProjectsBlock.replaceFirst(/\{\s*/) {
+    "{\n    repositories {\n        google()\n        mavenCentral()\n    }\n"
+  }
+  gradleText = gradleText.replace(allProjectsBlock, patched)
+}
+
+
+// --- Save back the updated build.gradle ---
+appBuildGradle.write(gradleText)
+
+}
+
 android {
   if (supportsNamespace()) {
     namespace "com.googleleaderboards"
@@ -50,6 +165,9 @@ android {
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+     manifestPlaceholders = [
+      appJSONGoogleLeaderboardsProjectID                  : appJSONGoogleLeaderboardsProjectIDString
+    ]
   }
 
   buildFeatures {
@@ -91,6 +209,8 @@ def kotlin_version = getExtOrDefault("kotlinVersion")
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation "com.google.android.gms:play-services-games-v2:+"
+ implementation 'com.google.code.gson:gson:2.13.1'
 }
 
 react {
