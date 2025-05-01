@@ -1,0 +1,1 @@
+{"version":3,"file":"NativeGoogleLeaderboards.d.ts","sourceRoot":"","sources":["../../../src/NativeGoogleLeaderboards.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,cAAc,CAAC;AAGhD,MAAM,WAAW,IAAK,SAAQ,WAAW;IACvC,KAAK,IAAI,OAAO,CAAC,MAAM,CAAC,CAAC;IACzB,QAAQ,IAAI,OAAO,CAAC,MAAM,CAAC,CAAC;IAC5B,SAAS,IAAI,OAAO,CAAC,MAAM,CAAC,CAAC;CAC9B;;AAED,wBAA4E"}
