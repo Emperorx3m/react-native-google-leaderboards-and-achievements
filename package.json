@@ -1,7 +1,8 @@
 {
   "name": "react-native-google-leaderboards",
-  "version": "0.1.0",
-  "description": "React Native Google Leaderboards package",
+  "version": "1.1.0",
+  "description": "A React Native module that integrates Google Play Games leaderboards, enabling score submission and leaderboard UI access on Android. Designed for cross-platform mobile games with support for native module extensions."
+,
   "source": "src/index.tsx",
   "main": "lib/module/index.js",
   "types": "lib/typescript/src/index.d.ts",
@@ -42,9 +43,18 @@
   },
   "keywords": [
     "react-native",
+    "android",
     "ios",
-    "android"
-  ],
+    "leaderboards",
+    "google-play-games",
+    "play-games-services",
+    "game-services",
+    "google-leaderboards",
+    "submit-score",
+    "cross-platform",
+    "mobile-games",
+    "native-modules"
+  ],  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Emperorx3m/react-native-google-leaderboards.git"
