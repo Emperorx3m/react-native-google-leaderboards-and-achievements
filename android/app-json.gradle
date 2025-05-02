@@ -2,7 +2,7 @@ import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 String fileName = "app.json"
-String jsonRoot = "react-native-google-leaderboards" // Updated to match your json block name
+String jsonRoot = "react-native-google-leaderboards-and-achievements" // Updated to match your json block name
 String jsonRaw = "GOOGLE_LEADERBOARDS_JSON_RAW" // Updated variable name
 
 File jsonFile = null
@@ -31,7 +31,7 @@ if (jsonFile != null && jsonFile.exists()) {
     rootProject.logger.warn ignored.toString()
   }
 
-  // If the block for react-native-google-leaderboards exists, extract the projectId
+  // If the block for react-native-google-leaderboards-and-achievements exists, extract the projectId
   if (json && json[jsonRoot] && json[jsonRoot].projectId) {
     String jsonStr = JsonOutput.toJson(JsonOutput.toJson(json[jsonRoot]))
 

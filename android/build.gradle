@@ -53,7 +53,7 @@ if (!appJSONGoogleLeaderboardsProjectIDString) {
   println "\n\n\n"
   println "###############################################################-ALERT-############################################################"
   println "\n\n\n"
-  println "WARNING: react-native-google-leaderboards requires a 'projectId' property inside a 'react-native-google-leaderboards' key in your app.json."
+  println "WARNING: react-native-google-leaderboards-and-achievements requires a 'projectId' property inside a 'react-native-google-leaderboards-and-achievements' key in your app.json."
   println "         No projectId property was found in this location. LEADERBOARDS WONT WORK!"
   println "\n\n\n"
   println "################################################################--ALERT--################################################################"

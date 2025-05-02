@@ -1,4 +1,4 @@
-# react-native-google-leaderboards
+# react-native-google-leaderboards-and-achievements
 
 A lightweight React Native module to integrate **Google Play Games Services** Leaderboards into your Android apps using **Google Play Games v2 SDK**.
 
@@ -25,9 +25,9 @@ This library handles:
 ## 📦 Installation
 
 ```bash
-npm install react-native-google-leaderboards
+npm install react-native-google-leaderboards-and-achievements
 # or
-yarn add react-native-google-leaderboards
+yarn add react-native-google-leaderboards-and-achievements
 ```
 1. Add the following to your root app.json 🚫 outside expo block:
 
@@ -35,7 +35,7 @@ yarn add react-native-google-leaderboards
 
 {
   "expo": {...},
-  "react-native-google-leaderboards": {
+  "react-native-google-leaderboards-and-achievements": {
     "projectId": "YOUR_GOOGLE_PLAY_GAMES_PROJECT_ID"
   }
 }
@@ -59,7 +59,7 @@ eas build ...
 ✅ Usage
 1. Import the module:
 ```js
-import {login} from 'react-native-google-leaderboards';
+import {login} from 'react-native-google-leaderboards-and-achievements';
 ```
 
 2. Sign In / check if authenticated:
@@ -90,7 +90,7 @@ import {login} from 'react-native-google-leaderboards';
 
 3. Submit a score:
 ```js
-import {checkAuth, submitScore} from 'react-native-google-leaderboards';
+import {checkAuth, submitScore} from 'react-native-google-leaderboards-and-achievements';
 
 checkAuth() //Call this before submitting score OPTIONAL
 submitScore({
@@ -105,7 +105,7 @@ submitScore({
 4. Show leaderboard UI:
 
 ```js
-import {showLeaderboard, onShowLeaderboardsRequested} from 'react-native-google-leaderboards';
+import {showLeaderboard, onShowLeaderboardsRequested} from 'react-native-google-leaderboards-and-achievements';
 
 onShowLeaderboardsRequested() // show all leaderboards list
 showLeaderboard('CgkI...yourLeaderboardId'); //particular leaderboard
@@ -126,6 +126,13 @@ Read https://developer.android.com/games/pgs/leaderboards#score_formatting about
   submitScore(leaderboardId: string, score: number): Promise<string>;
   onShowLeaderboardsRequested(): Promise<string>;
   showLeaderboard(leaderboardId: string): Promise<string>;
+
+  //achievements
+
+  showAchievements(): Promise<string>;
+  unlockAchievement(my_achievement_id: string): Promise<string>;
+  incrementAchievement(my_achievement_id: string, steps: number): Promise<string>;
+
   ```
 
 ## Contributing

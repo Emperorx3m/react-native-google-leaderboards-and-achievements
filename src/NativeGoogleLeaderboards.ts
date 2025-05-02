@@ -7,6 +7,10 @@ export interface Spec extends TurboModule {
   submitScore(leaderboardId: string, score: number): Promise<string>;
   onShowLeaderboardsRequested(): Promise<string>;
   showLeaderboard(leaderboardId: string): Promise<string>;
+  
+  showAchievements(): Promise<string>;
+  unlockAchievement(my_achievement_id: string): Promise<string>;
+  incrementAchievement(my_achievement_id: string, steps: number): Promise<string>;
 
 }
 

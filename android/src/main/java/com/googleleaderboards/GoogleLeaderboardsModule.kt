@@ -11,6 +11,7 @@ import com.google.gson.Gson
 import android.widget.Toast
 import org.json.JSONObject
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.games.LeaderboardsClient;
 
 
@@ -58,6 +59,64 @@ class GoogleLeaderboardsModule(private val reactContext: ReactApplicationContext
 
 private val RC_LEADERBOARD_UI = 9001
 private val RC_UNUSED = 5001
+private val RC_ACHIEVEMENT_UI = 9003;
+
+
+@ReactMethod
+override fun unlockAchievement(my_achievement_id: String, promise: Promise) {
+val activity = reactContext.currentActivity ?: return
+
+    try {
+       PlayGames.getAchievementsClient(activity).unlock(my_achievement_id)
+
+        promise.resolve("Unlocked successfully.")
+    } catch (e: Exception) {
+        promise.reject("SUBMIT_SCORE_ERROR", "Failed to submit score: ${e.message}", e)
+    }
+}
+
+@ReactMethod
+override fun incrementAchievement(my_achievement_id: String, steps: Double, promise: Promise) {
+    val activity = reactContext.currentActivity ?: return
+    if (steps < 1) {
+        promise.reject("INVALID_SCORE", "Score must be greater than 0.")
+        return
+    }
+
+    try {
+       PlayGames.getAchievementsClient(activity).increment(my_achievement_id, steps.toInt())
+
+        promise.resolve("Incremented successfully.")
+    } catch (e: Exception) {
+        promise.reject("SUBMIT_SCORE_ERROR", "Failed to submit score: ${e.message}", e)
+    }
+}
+
+@ReactMethod
+override fun showAchievements(promise: Promise) {
+    val activity = reactContext.currentActivity
+
+    if (activity == null) {
+        promise.reject("NO_ACTIVITY", "Activity doesn't exist")
+        return
+    }
+
+    val RC_ACHIEVEMENT_UI = 9003
+
+    try {
+        PlayGames.getAchievementsClient(activity)
+            .achievementsIntent
+            .addOnSuccessListener { intent ->
+                activity.startActivityForResult(intent, RC_ACHIEVEMENT_UI)
+                promise.resolve("Achievements UI shown.")
+            }
+            .addOnFailureListener { e ->
+                promise.reject("SHOW_ACHIEVEMENTS_FAILED", e.message, e)
+            }
+    } catch (e: Exception) {
+        promise.reject("SHOW_ACHIEVEMENTS_EXCEPTION", e.message, e)
+    }
+}
 
 
 @ReactMethod
@@ -123,8 +182,8 @@ override fun submitScore(leaderboardId: String, score: Double, promise: Promise)
         promise.reject("NO_ACTIVITY", "Current activity is null.")
         return
     }
-gamesSignInClient.signIn().addOnCompleteListener { task ->
- val result = task.result
+      gamesSignInClient.signIn().addOnCompleteListener { task ->
+      val result = task.result
             val isAuthenticated = result != null && result.isAuthenticated
         if (task.isSuccessful && isAuthenticated) {
             // Sign-in successful, get player info

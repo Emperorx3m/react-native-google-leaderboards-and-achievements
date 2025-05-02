@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-google-leaderboards": ["./src/index"]
+      "react-native-google-leaderboards-and-achievements": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

@@ -23,3 +23,17 @@ export function onShowLeaderboardsRequested(): Promise<string> {
 export function showLeaderboard(leaderboardId: string): Promise<string> {
   return GoogleLeaderboards.showLeaderboard(leaderboardId);
 }
+
+// achievements section
+
+export function showAchievements(): Promise<string> {
+  return GoogleLeaderboards.showAchievements();
+}
+ 
+export function incrementAchievement(my_achievement_id: string, steps: number): Promise<string> {
+  return GoogleLeaderboards.incrementAchievement(my_achievement_id, steps);
+}
+
+export function unlockAchievement(my_achievement_id: string): Promise<string> {
+  return GoogleLeaderboards.unlockAchievement(my_achievement_id);
+}

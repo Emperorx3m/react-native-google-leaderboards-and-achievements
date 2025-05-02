@@ -1,7 +1,7 @@
 {
-  "name": "react-native-google-leaderboards",
-  "version": "1.1.1",
-  "description": "A React Native module that integrates Google Play Games leaderboards, enabling score submission and leaderboard UI access on Android. Designed for cross-platform mobile games with support for native module extensions."
+  "name": "react-native-google-leaderboards-and-achievements",
+  "version": "2.1.1",
+  "description": "A React Native module for integrating Google Play Games Services on Android. Supports leaderboard score submissions, achievement unlocking and incrementing, and launching the native UI for leaderboards and achievements. Ideal for cross-platform mobile games requiring native-level game service features."
 ,
   "source": "src/index.tsx",
   "main": "lib/module/index.js",
@@ -33,7 +33,7 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-google-leaderboards-example",
+    "example": "yarn workspace react-native-google-leaderboards-and-achievements-example",
     "test": "jest",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -51,20 +51,33 @@
     "game-services",
     "google-leaderboards",
     "submit-score",
+    "achievements",
+    "increment-achievement",
+    "unlock-achievement",
+    "show-achievements",
     "cross-platform",
     "mobile-games",
-    "native-modules"
-  ],  
+    "react-native-module",
+    "native-modules",
+    "expo-compatible",
+    "react-native-google-play-games",
+    "gamification",
+    "mobile-game-sdk",
+    "firebase-games",
+    "play-games-leaderboards",
+    "game-dev-tools"
+  ]
+  ,  
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Emperorx3m/react-native-google-leaderboards.git"
+    "url": "git+https://github.com/Emperorx3m/react-native-google-leaderboards-and-achievements.git"
   },
   "author": "Emperorx3m <nextwaveclub.us@gmail.com> (https://github.com/Emperorx3m)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Emperorx3m/react-native-google-leaderboards/issues"
+    "url": "https://github.com/Emperorx3m/react-native-google-leaderboards-and-achievements/issues"
   },
-  "homepage": "https://github.com/Emperorx3m/react-native-google-leaderboards#readme",
+  "homepage": "https://github.com/Emperorx3m/react-native-google-leaderboards-and-achievements#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
