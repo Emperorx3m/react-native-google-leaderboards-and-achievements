@@ -9,6 +9,9 @@ import com.google.android.gms.games.GamesSignInClient
 import com.google.android.gms.games.PlayGamesSdk
 import com.google.gson.Gson
 import android.widget.Toast
+import org.json.JSONObject
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.games.LeaderboardsClient;
 
 
 @ReactModule(name = GoogleLeaderboardsModule.NAME)
@@ -20,11 +23,11 @@ class GoogleLeaderboardsModule(private val reactContext: ReactApplicationContext
   }
 
   private lateinit var gamesSignInClient: GamesSignInClient
+  // private var mLeaderboardsClient: LeaderboardsClient
 
   init {
     PlayGamesSdk.initialize(reactContext)
     gamesSignInClient = PlayGames.getGamesSignInClient(reactContext.currentActivity!!)
-    Toast.makeText(reactContext, "gamesSignInClient correct ${gamesSignInClient}", Toast.LENGTH_LONG).show()
   }
 
   
@@ -34,45 +37,84 @@ class GoogleLeaderboardsModule(private val reactContext: ReactApplicationContext
     return NAME
   }
 
-  @ReactMethod
-  override fun login_v2(promise: Promise) {
-    val activity = reactContext.currentActivity
-    if (activity == null) {
-        promise.reject("NO_ACTIVITY", "Current activity is null.")
+  fun dynamicToJsonSimple(obj: Any, promise: Promise) {
+    try {
+        val json = JSONObject()
+        obj.javaClass.declaredFields.forEach { field ->
+            field.isAccessible = true
+            val value = field.get(obj)
+            when (value) {
+                null -> json.put(field.name, JSONObject.NULL)
+                is Number, is Boolean -> json.put(field.name, value)
+                is String -> json.put(field.name, value)
+                else -> json.put(field.name, value.toString()) // Fallback
+            }
+        }
+        promise.resolve(json.toString())
+    } catch (e: Exception) {
+        promise.reject("PARSE_ERROR", e)
+    }
+}
+
+private val RC_LEADERBOARD_UI = 9001
+private val RC_UNUSED = 5001
+
+
+@ReactMethod
+override fun onShowLeaderboardsRequested(promise: Promise) {
+    val activity = reactContext.currentActivity ?: return
+
+    PlayGames.getLeaderboardsClient(activity).getAllLeaderboardsIntent()
+        .addOnSuccessListener { intent ->
+            activity.startActivityForResult(intent, RC_UNUSED)
+                        promise.resolve("Success")
+        }
+        .addOnFailureListener { e ->
+           
+                       promise.reject("Leaderboard_noShow", "Failed to show leaderboard")
+        }
+}
+
+
+@ReactMethod
+override fun showLeaderboard(leaderboardId: String, promise: Promise) {
+    val activity = reactContext.currentActivity ?: return
+
+    PlayGames.getLeaderboardsClient(activity)
+        .getLeaderboardIntent(leaderboardId)
+        .addOnSuccessListener { intent ->
+            activity.startActivityForResult(intent, RC_LEADERBOARD_UI)
+            promise.resolve("Success")
+        }
+        .addOnFailureListener { e ->
+            promise.reject("Leaderboard_noShow", "Failed to show leaderboard")
+        }
+}
+
+
+@ReactMethod
+override fun submitScore(leaderboardId: String, score: Double, promise: Promise) {
+    if (leaderboardId.isBlank()) {
+        promise.reject("INVALID_LEADERBOARD_ID", "Leaderboard ID is required.")
         return
     }
 
-    val gamesSignInClientV2: GamesSignInClient = PlayGames.getGamesSignInClient(activity)
-
-
-// Toast.makeText(activity, "Attempting to sign in to google play games", Toast.LENGTH_LONG).show()
-    gamesSignInClientV2.signIn().addOnCompleteListener { task ->
-      if (task.isSuccessful) {
-        try {
-          val gson = Gson()
-          val taskjson = gson.toJson(task) 
-          promise.resolve(taskjson)
-          // promise.resolve("${task.result}")
-      } catch (e: Exception) {
-          val errorDetails = Gson().toJson(e)
-          promise.reject("SIGN_IN_EXCEPTION", errorDetails)
-      }
-      } else {
-        try {
-          val gson = Gson()
-          val taskjson = gson.toJson(task) 
-          promise.resolve(taskjson)
-      } catch (e: Exception) {
-          // Handle JSON conversion or other errors
-          val errorDetails = Gson().toJson(e)
-          promise.reject("SIGN_IN_UNSUCCESSFUL", errorDetails)
-      }
-      }
+    if (score < 0) {
+        promise.reject("INVALID_SCORE", "Score must be a non-negative number.")
+        return
     }
-    
-  }
-  
 
+    try {
+        val scoreLong = score.toLong()
+        PlayGames.getLeaderboardsClient(reactContext.currentActivity!!).submitScore(leaderboardId, scoreLong)
+        promise.resolve("Score $scoreLong submitted to leaderboard '$leaderboardId' successfully.")
+    } catch (e: Exception) {
+        promise.reject("SUBMIT_SCORE_ERROR", "Failed to submit score: ${e.message}", e)
+    }
+}
+
+
+  @ReactMethod
   override fun login(promise: Promise) {
     PlayGamesSdk.initialize(reactContext)
 
@@ -82,21 +124,18 @@ class GoogleLeaderboardsModule(private val reactContext: ReactApplicationContext
         return
     }
 gamesSignInClient.signIn().addOnCompleteListener { task ->
-        if (task.isSuccessful) {
-            val result = task.result
+ val result = task.result
             val isAuthenticated = result != null && result.isAuthenticated
-
-            if (isAuthenticated) {
-                // Sign-in successful, get player info
+        if (task.isSuccessful && isAuthenticated) {
+            // Sign-in successful, get player info
                 Toast.makeText(activity, "Logged in to google play games", Toast.LENGTH_LONG).show()
 
                 PlayGames.getPlayersClient(reactContext.currentActivity!!).currentPlayer.addOnCompleteListener { playerTask ->
                     if (playerTask.isSuccessful) {
                         val player = playerTask.result
                         try {
-                            val gson = Gson()
-                            val playerJson = gson.toJson(player) 
-                            promise.resolve(playerJson)
+                            dynamicToJsonSimple(player, promise)
+                            // promise.resolve("${playerTask.result}")
                         } catch (e: Exception) {
                             // Handle JSON conversion or other errors
                             val errorDetails = Gson().toJson(e)
@@ -112,19 +151,9 @@ gamesSignInClient.signIn().addOnCompleteListener { task ->
                         promise.reject("GET_PLAYER_FAILED", errorDetails)
                     }
                 }
-            } else {
-                // Handle login failure
-                Toast.makeText(activity, "Unable to login to google play games", Toast.LENGTH_LONG).show()
-
-                val errorDetails = Gson().toJson(mapOf(
-                    "error" to "Authentication failed",
-                    "result" to task.result?.toString(),
-                    "stackTrace" to "No additional info"
-                ))
-                promise.reject("LOGIN_FAILED", errorDetails)
-            }
         } else {
-            // Handle sign-in failure
+            // Handle sign-in failure // Handle login failure
+                Toast.makeText(activity, "Unable to login to google play games", Toast.LENGTH_LONG).show()
             val exception = task.exception
             if (exception != null) {
               val errorDetails = Gson().toJson(exception)
@@ -157,9 +186,9 @@ gamesSignInClient.signIn().addOnCompleteListener { task ->
       if (isAuthenticated) {
         PlayGames.getPlayersClient(reactContext.currentActivity!!).currentPlayer.addOnCompleteListener { player ->
           try {
-            val gson = Gson()
-            val playerJson = gson.toJson(player)
-            promise.resolve(playerJson)
+                                        dynamicToJsonSimple(player.result, promise)
+
+                            // promise.resolve("${playerTask.result}")
           } catch (e: Exception) {
             promise.reject("GET_PLAYER_FAILED", "Failed to get player info", e)
             // promise.resolve("${player}")

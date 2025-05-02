@@ -8,6 +8,8 @@ This library handles:
 - Leaderboard UI launch
 - Auto-patching of `AndroidManifest.xml`, `build.gradle`, and Play Games configuration using your `app.json`
 
+## BEFORE YOU USE THIS LIBRARY! MAKE SURE YOU HAVE ENABLED AND CONFIGURED GAMES SERVICES IN YOUR APP UNDER PLAY CONSOLE - ONLY THING YOU NEED IS TO ADD THE BLOCK IN YOUR APP.JSON AS STEP 1 BELOW
+
 ---
 
 ## 🚀 Features
@@ -30,7 +32,9 @@ yarn add react-native-google-leaderboards
 1. Add the following to your root app.json 🚫 outside expo block:
 
 ```js
+
 {
+  "expo": {...},
   "react-native-google-leaderboards": {
     "projectId": "YOUR_GOOGLE_PLAY_GAMES_PROJECT_ID"
   }
@@ -58,35 +62,53 @@ eas build ...
 import {login} from 'react-native-google-leaderboards';
 ```
 
-2. Sign In:
+2. Sign In / check if authenticated:
 ```js
-login()
-  .then(res => {
-    console.log('Login successful:', res);
-  })
-  .catch(err => {
-    console.error('Login failed:', err);
-  });
+ const handleLogin = async () => {
+   
+    try {
+      const result = await login();
+      console.log('login result', JSON.stringify(result, null, 2))
+      const parsed = JSON.parse(result);
+    } catch (e) {
+      console.log("Login error", e)
+    } 
+  };
+
+
+  const handleCheckAuth = async () => {
+    
+    try {
+      const result = await checkAuth();
+      console.log('handleCheckAuth result', JSON.stringify(result, null, 2))
+      const parsed = JSON.parse(result);
+    } catch (e) {
+      console.log("handleCheckAuth error", e)
+    } 
+  };
 ```
 
 3. Submit a score:
 ```js
 import {checkAuth, submitScore} from 'react-native-google-leaderboards';
 
-checkAuth() //Call this before submitting score
+checkAuth() //Call this before submitting score OPTIONAL
 submitScore({
   leaderboardId: 'CgkI...yourLeaderboardId', //retrieve from login or checkAuth
-  score: 1500
+  score: 1500 //properly format this before submitting
 });
+
+//Read https://developer.android.com/games/pgs/leaderboards#score_formatting about formatting. Before you submit formatted scores.
 
 ```
 
 4. Show leaderboard UI:
 
 ```js
-import {showLeaderboard} from 'react-native-google-leaderboards';
+import {showLeaderboard, onShowLeaderboardsRequested} from 'react-native-google-leaderboards';
 
-showLeaderboard('CgkI...yourLeaderboardId');
+onShowLeaderboardsRequested() // show all leaderboards list
+showLeaderboard('CgkI...yourLeaderboardId'); //particular leaderboard
 ```
 
 📄 API Reference
@@ -95,6 +117,16 @@ Authenticates the user with Google Play Games. Returns result or error.
 
 submitScore({ leaderboardId, score })
 Submits a score to a specific leaderboard.
+
+Read https://developer.android.com/games/pgs/leaderboards#score_formatting about formatting. Before you submit formatted scores.
+
+```js
+  login(): Promise<string>;
+  checkAuth(): Promise<string>;
+  submitScore(leaderboardId: string, score: number): Promise<string>;
+  onShowLeaderboardsRequested(): Promise<string>;
+  showLeaderboard(leaderboardId: string): Promise<string>;
+  ```
 
 ## Contributing
 
