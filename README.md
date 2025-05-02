@@ -1,11 +1,14 @@
 # react-native-google-leaderboards-and-achievements
 
-A lightweight React Native module to integrate **Google Play Games Services** Leaderboards into your Android apps using **Google Play Games v2 SDK**.
+A React Native module for integrating Google Play Games Services on Android. Supports leaderboard score submissions, achievement unlocking and incrementing, and launching the native UI for leaderboards and achievements. Ideal for cross-platform mobile games requiring native-level game service features. using **Google Play Games v2 SDK**.
 
 This library handles:
 - Google Sign-In (V2 API)
 - Leaderboard submission
 - Leaderboard UI launch
+- ACHIEVEMENTS UI launch
+- Achievements Unlock
+- Achievements Increment
 - Auto-patching of `AndroidManifest.xml`, `build.gradle`, and Play Games configuration using your `app.json`
 
 ## BEFORE YOU USE THIS LIBRARY! MAKE SURE YOU HAVE ENABLED AND CONFIGURED GAMES SERVICES IN YOUR APP UNDER PLAY CONSOLE - ONLY THING YOU NEED IS TO ADD THE BLOCK IN YOUR APP.JSON AS STEP 1 BELOW
@@ -109,6 +112,18 @@ import {showLeaderboard, onShowLeaderboardsRequested} from 'react-native-google-
 
 onShowLeaderboardsRequested() // show all leaderboards list
 showLeaderboard('CgkI...yourLeaderboardId'); //particular leaderboard
+```
+
+# Achievements
+ Show Achievements UI:
+
+```js
+import {showAchievements, unlockAchievement, incrementAchievement } from 'react-native-google-leaderboards-and-achievements';
+
+showAchievements()
+unlockAchievement('ACHIEVEMENT_ID');
+incrementAchievement('ACHIEVEMENT_ID', 2);
+
 ```
 
 📄 API Reference
