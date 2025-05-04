@@ -24,7 +24,7 @@ class GoogleLeaderboardsModule(private val reactContext: ReactApplicationContext
   }
 
   private lateinit var gamesSignInClient: GamesSignInClient
-  // private var mLeaderboardsClient: LeaderboardsClient
+  //\\\ private var mLeaderboardsClient: LeaderboardsClient
 
   init {
     PlayGamesSdk.initialize(reactContext)
@@ -38,24 +38,30 @@ class GoogleLeaderboardsModule(private val reactContext: ReactApplicationContext
     return NAME
   }
 
-  fun dynamicToJsonSimple(obj: Any, promise: Promise) {
+fun dynamicToJsonSimple(obj: Any, promise: Promise) {
     try {
         val json = JSONObject()
-        obj.javaClass.declaredFields.forEach { field ->
-            field.isAccessible = true
-            val value = field.get(obj)
-            when (value) {
-                null -> json.put(field.name, JSONObject.NULL)
-                is Number, is Boolean -> json.put(field.name, value)
-                is String -> json.put(field.name, value)
-                else -> json.put(field.name, value.toString()) // Fallback
+        obj.javaClass.methods
+            .filter { it.name.startsWith("get") && it.parameterTypes.isEmpty() }
+            .forEach { method ->
+                val name = method.name.removePrefix("get").replaceFirstChar { it.lowercase() }
+                val value = method.invoke(obj)
+                when (value) {
+                    null -> json.put(name, JSONObject.NULL)
+                    is Number, is Boolean, is String -> json.put(name, value)
+                    else -> json.put(name, value.toString())
+                }
             }
-        }
+
+        // Add raw_object
+        json.put("raw_object", obj.toString())
+
         promise.resolve(json.toString())
     } catch (e: Exception) {
         promise.reject("PARSE_ERROR", e)
     }
 }
+
 
 private val RC_LEADERBOARD_UI = 9001
 private val RC_UNUSED = 5001
