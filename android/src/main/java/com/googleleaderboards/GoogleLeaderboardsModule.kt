@@ -27,8 +27,13 @@ class GoogleLeaderboardsModule(private val reactContext: ReactApplicationContext
   //\\\ private var mLeaderboardsClient: LeaderboardsClient
 
   init {
+    try {
     PlayGamesSdk.initialize(reactContext)
     gamesSignInClient = PlayGames.getGamesSignInClient(reactContext.currentActivity!!)
+    } catch (e: Exception) {
+        promise.reject("PARSE_ERROR", "PlayGames Failed to initialize")
+        return
+    }
   }
 
   
@@ -181,7 +186,6 @@ override fun submitScore(leaderboardId: String, score: Double, promise: Promise)
 
   @ReactMethod
   override fun login(promise: Promise) {
-    PlayGamesSdk.initialize(reactContext)
 
     val activity = reactContext.currentActivity
     if (activity == null) {
@@ -251,7 +255,7 @@ override fun submitScore(leaderboardId: String, score: Double, promise: Promise)
       if (isAuthenticated) {
         PlayGames.getPlayersClient(reactContext.currentActivity!!).currentPlayer.addOnCompleteListener { player ->
           try {
-                                        dynamicToJsonSimple(player.result, promise)
+                dynamicToJsonSimple(player.result, promise)
 
                             // promise.resolve("${playerTask.result}")
           } catch (e: Exception) {
@@ -260,7 +264,7 @@ override fun submitScore(leaderboardId: String, score: Double, promise: Promise)
           }
         }
       } else {
-        // promise.reject("${task}");
+        login()
         Toast.makeText(reactContext, "User is not authenticated.", Toast.LENGTH_LONG).show()
 
         promise.reject("NOT_AUTHENTICATED", "User is not authenticated.")
