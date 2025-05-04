@@ -31,8 +31,8 @@ class GoogleLeaderboardsModule(private val reactContext: ReactApplicationContext
     PlayGamesSdk.initialize(reactContext)
     gamesSignInClient = PlayGames.getGamesSignInClient(reactContext.currentActivity!!)
     } catch (e: Exception) {
-        promise.reject("PARSE_ERROR", "PlayGames Failed to initialize")
-        return
+        // promise.reject("PARSE_ERROR", "PlayGames Failed to initialize")
+        // return
     }
   }
 
@@ -264,7 +264,7 @@ override fun submitScore(leaderboardId: String, score: Double, promise: Promise)
           }
         }
       } else {
-        login()
+        login(promise)
         Toast.makeText(reactContext, "User is not authenticated.", Toast.LENGTH_LONG).show()
 
         promise.reject("NOT_AUTHENTICATED", "User is not authenticated.")

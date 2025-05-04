@@ -1,6 +1,6 @@
 {
   "name": "react-native-google-leaderboards-and-achievements",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A React Native module for integrating Google Play Games Services on Android. Supports leaderboard score submissions, achievement unlocking and incrementing, and launching the native UI for leaderboards and achievements. Ideal for cross-platform mobile games requiring native-level game service features."
 ,
   "source": "src/index.tsx",
